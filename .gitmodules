@@ -1,3 +1,0 @@
-[submodule "CasADi"]
-	path = CasADi
-	url = git@github.com:casadi/casadi.git
