@@ -44,5 +44,3 @@
 %                                     Idx_Assume_Beta────────╯      │   │ ┊
 %                                              N_recpred────────────╯+1─╯ ┊
 
-
-addpath ../../../../5_Sztaki20_Main/Utils/casadi_helper
