@@ -21,7 +21,7 @@ end
 
 %%
 
-FilePref = sprintf(['results/MDPI%s/%s_Pred-%s'],...
+FilePref = sprintf(['results/SNMPC%s/%s_Pred-%s'],...
     args.Version,datestr(date,29),datestr(r.Date_End_REC,29));
 DIR = fileparts(FilePref);
 if ~exist(DIR,"dir")
@@ -32,36 +32,36 @@ r = zf_plotter_opts(r);
 
 %% REC: Segedvaltozok
 
-d_recpred = r.d_recpred';
+d_val = r.d_val;
 N_rec = r.N_rec;
 H_ref = r.H_ref;
 
-Exp_u = r.Muu_val;
-Std_u = sqrt(r.Suu_val);
+Exp_u = r.Mu_val;
+Std_u = sqrt(r.Su_val);
 
-Mxx_val = r.Mxx_val;
-Exp_S = Mxx_val(1,:)';
-Exp_L = Mxx_val(2,:)';
-Exp_P = Mxx_val(3,:)';
-Exp_I = Mxx_val(4,:)';
-Exp_A = Mxx_val(5,:)';
-Exp_H = Mxx_val(6,:)';
-Exp_R = Mxx_val(7,:)';
-Exp_D = Mxx_val(8,:)';
-Exp_U = Mxx_val(9,:)';
-Exp_R_All = Mxx_val(10,:)';
+Mx_val = r.Mx_val;
+Exp_S = Mx_val(1,:)';
+Exp_L = Mx_val(2,:)';
+Exp_P = Mx_val(3,:)';
+Exp_I = Mx_val(4,:)';
+Exp_A = Mx_val(5,:)';
+Exp_H = Mx_val(6,:)';
+Exp_R = Mx_val(7,:)';
+Exp_D = Mx_val(8,:)';
+Exp_U = Mx_val(9,:)';
+Exp_R_All = Mx_val(10,:)';
 
-Sxx_diag = r.Sxx_diag;
-Std_S = sqrt(Sxx_diag(1,:)');
-Std_L = sqrt(Sxx_diag(2,:)');
-Std_P = sqrt(Sxx_diag(3,:)');
-Std_I = sqrt(Sxx_diag(4,:)');
-Std_A = sqrt(Sxx_diag(5,:)');
-Std_H = sqrt(Sxx_diag(6,:)');
-Std_R = sqrt(Sxx_diag(7,:)');
-Std_D = sqrt(Sxx_diag(8,:)');
-Std_U = sqrt(Sxx_diag(9,:)');
-Std_R_All = sqrt(Sxx_diag(10,:)');
+Sx_diag = r.Sx_diag;
+Std_S = sqrt(Sx_diag(1,:)');
+Std_L = sqrt(Sx_diag(2,:)');
+Std_P = sqrt(Sx_diag(3,:)');
+Std_I = sqrt(Sx_diag(4,:)');
+Std_A = sqrt(Sx_diag(5,:)');
+Std_H = sqrt(Sx_diag(6,:)');
+Std_R = sqrt(Sx_diag(7,:)');
+Std_D = sqrt(Sx_diag(8,:)');
+Std_U = sqrt(Sx_diag(9,:)');
+Std_R_All = sqrt(Sx_diag(10,:)');
 
 %% Allitsuk be a Figure ablakot floating mode-ba.
 
@@ -117,7 +117,7 @@ if args.FigNr == 1
     
     yyaxis left
     hold on
-    Lines = plot(d_recpred,[Exp_L,Exp_P,Exp_I,Exp_A,Exp_H,Exp_D]);
+    Lines = plot(d_val,[Exp_L,Exp_P,Exp_I,Exp_A,Exp_H,Exp_D]);
     
     for i = 1:numel(Lines)
         Lines(i).Marker = 'none';
@@ -146,9 +146,9 @@ if args.FigNr == 1
     % Std_u_filtered = movmean(Std_u,12);
     Std_u_filtered = Std_u;
     
-    Pl = plot(d_recpred(1:end-1),log10(r.R_lqr)/20,'.','LineWidth',1,'Color',[0.8500 0.3250 0.0980]);
+    Pl = plot(d_val(1:end-1),log10(r.R_lqr)/20,'.','LineWidth',1,'Color',[0.8500 0.3250 0.0980]);
     
-    Sh = zf_plot_mean_var(d_recpred(1:end-1),Exp_u,Std_u_filtered);
+    Sh = zf_plot_mean_var(d_val(1:end-1),Exp_u,Std_u_filtered);
     title(Titles{Cnt},'Interpreter','latex','FontSize',12)
     grid on
     
@@ -184,8 +184,8 @@ if args.FigNr == 1
     
     yyaxis left
     hold on
-    Sh = zf_plot_mean_var(d_recpred,Exp_H,Std_H);
-    Pl = plot(d_recpred(1:N_rec),H_ref,'Color',[ 0.850 0.325 0.098 ],'Marker','none','LineStyle','-','LineWidth',1.5);
+    Sh = zf_plot_mean_var(d_val,Exp_H,Std_H);
+    Pl = plot(d_val(1:N_rec),H_ref,'Color',[ 0.850 0.325 0.098 ],'Marker','none','LineStyle','-','LineWidth',1.5);
 
     ylim([0,Perc_Max]*r.Par.Np.val/100);
     
@@ -211,7 +211,7 @@ if args.FigNr == 1
     ax = nexttile;
     hold on
             
-    Sh = zf_plot_mean_var(d_recpred(1:end-1),r.y_All(3,1:N_rec)',sqrt(r.Sy_diag(3,1:N_rec))');
+    Sh = zf_plot_mean_var(d_val(1:end-1),r.y_val(3,1:N_rec)',sqrt(r.Sy_diag(3,1:N_rec))');
     title(Titles{Cnt},'Interpreter','latex','FontSize',12)
     grid on
     
@@ -233,7 +233,7 @@ if args.FigNr == 1
     
     yyaxis left
     hold on
-    zf_plot_mean_var(r.d_All(1:N_rec),r.y_All(1,1:N_rec)',real(sqrt(r.Sy_diag(1,1:N_rec))'));
+    zf_plot_mean_var(r.d_val(1:N_rec),r.y_val(1,1:N_rec)',real(sqrt(r.Sy_diag(1,1:N_rec))'));
     
     ylim([0,Perc_Max]*r.Par.Np.val/100);
     
@@ -255,7 +255,7 @@ if args.FigNr == 1
     
     yyaxis left
     hold on
-    zf_plot_mean_var(r.d_All(1:N_rec),r.y_All(2,1:N_rec)',real(sqrt(r.Sy_diag(2,1:N_rec))'));
+    zf_plot_mean_var(r.d_val(1:N_rec),r.y_val(2,1:N_rec)',real(sqrt(r.Sy_diag(2,1:N_rec))'));
     
     ylim([0,Perc_Max]*r.Par.Np.val/100);
     
@@ -294,7 +294,7 @@ elseif args.FigNr == 2
     
     yyaxis left
     hold on
-    Sh = zf_plot_mean_var(d_recpred,Exp_L,Std_L);
+    Sh = zf_plot_mean_var(d_val,Exp_L,Std_L);
 
     ylim([0,Perc_Max]*r.Par.Np.val/100);
     
@@ -318,7 +318,7 @@ elseif args.FigNr == 2
     
     yyaxis left
     hold on
-    zf_plot_mean_var(d_recpred,Exp_P,Std_P);
+    zf_plot_mean_var(d_val,Exp_P,Std_P);
 
     ylim([0,Perc_Max]*r.Par.Np.val/100);
     
@@ -341,7 +341,7 @@ elseif args.FigNr == 2
     
     yyaxis left
     hold on
-    zf_plot_mean_var(d_recpred,Exp_I,Std_I);
+    zf_plot_mean_var(d_val,Exp_I,Std_I);
 
     ylim([0,Perc_Max]*r.Par.Np.val/100);
     
@@ -364,7 +364,7 @@ elseif args.FigNr == 2
     
     yyaxis left
     hold on
-    zf_plot_mean_var(d_recpred,Exp_A,Std_A);
+    zf_plot_mean_var(d_val,Exp_A,Std_A);
 
     ylim([0,Perc_Max]*r.Par.Np.val/100);
     
@@ -387,7 +387,7 @@ elseif args.FigNr == 2
     
     yyaxis left
     hold on
-    zf_plot_mean_var(d_recpred,Exp_D,Std_D);
+    zf_plot_mean_var(d_val,Exp_D,Std_D);
 
     ylim([0,Perc_Max]*r.Par.Np.val/100);
     
@@ -411,9 +411,9 @@ elseif args.FigNr == 2
     
     yyaxis left
     hold on
-    Sh = zf_plot_mean_var(d_recpred,Exp_R,Std_R);
-    Sh2 = zf_plot_mean_var(d_recpred,Exp_R_All,Std_R_All,[0.8500 0.3250 0.0980]);
-    Sh3 = zf_plot_mean_var(d_recpred,Exp_R+Exp_U,sqrt(Std_R.^2 + Std_U.^2),[0.4660 0.6740 0.1880]);
+    Sh = zf_plot_mean_var(d_val,Exp_R,Std_R);
+    Sh2 = zf_plot_mean_var(d_val,Exp_R_All,Std_R_All,[0.8500 0.3250 0.0980]);
+    Sh3 = zf_plot_mean_var(d_val,Exp_R+Exp_U,sqrt(Std_R.^2 + Std_U.^2),[0.4660 0.6740 0.1880]);
 
     ylim([0,Perc_Max]*r.Par.Np.val/100);
     

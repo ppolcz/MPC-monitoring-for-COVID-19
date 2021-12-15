@@ -5,9 +5,6 @@ arguments
     xargs.Show_XLabel = true;
     xargs.Show_Months_Bars = true;
     xargs.Show_Months = true;
-    xargs.Show_Date_Start_MPC = true;
-    xargs.Show_Date_Last_Available_Data = true;
-    xargs.Show_Date_Current = true;
 end
 %%
 %  File: mf_latexify_plot_v1.m
@@ -44,24 +41,6 @@ if xargs.Show_Months_Bars
     if xargs.Show_Months
         ax.Legend.String{end} = 'months';
     end
-end
-
-if xargs.Show_Date_Start_MPC
-    Line1 = line([0 0]+r.d_Start_MPC,ax.YLim,'Color','blue','LineStyle','--');
-    Line1.YData = YLim;
-    ax.Legend.String{end} = r.Str_Date_Start_MPC;
-end
-
-if xargs.Show_Date_Last_Available_Data
-    Line2 = line([0 0]+r.d_Last_Available_Data,ax.YLim,'Color','black','LineStyle','--','LineWidth',1);
-    Line2.YData = YLim;
-    ax.Legend.String{end} = r.Str_Last_Available_Data;
-end
-
-if xargs.Show_Date_Current && r.d_Current_Date <= ax.XLim(2)
-    Line3 = line([0 0]+r.d_Current_Date,ax.YLim,'Color','black','LineStyle','--','LineWidth',2);
-    Line3.YData = YLim;
-    ax.Legend.String{end} = r.Str_Current_Date;
 end
 
 Removable_Leg_Entries = strcmp(ax.Legend.String,'') | startsWith(ax.Legend.String,'data');

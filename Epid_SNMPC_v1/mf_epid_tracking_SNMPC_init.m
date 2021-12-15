@@ -32,14 +32,8 @@ params = r.params;
 Mp_val = r.Mp;
 Sp_val = r.Sp;
 
-N_rec = r.N_rec;
-N_recpred = r.N_recpred;
-
-H_ref = r.H_ref;
-VV = r.VV;
-
-xx_val_NMPC = r.xx_val;
-uu_val_NMPC = r.uu_val;
+x_val_NMPC = r.x_val;
+u_val_NMPC = r.u_val;
 
 %%%
 % Dynamical model
@@ -123,15 +117,15 @@ r.desc__Fn_dyneq_STO = 'Discrete-time dynamic equations of the expected state';
 
 idx = 1:6;
 
-Mxx_pp_error = zeros(N_recpred,1);
-KK = zeros(N_recpred,nx);
-Sxx = [ {Sx0} cell(1,N_recpred) ];
-Sxxp = [ {zeros(nx,np)} cell(1,N_recpred) ];
-Suu = zeros(1,N_recpred);
-R_lqr = zeros(1,N_recpred);
+Mx_pp_error = zeros(r.N_rec,1);
+K_val = zeros(r.N_rec,nx);
+Sx_val = [ {Sx0} cell(1,r.N_rec) ];
+Sxp_val = [ {zeros(nx,np)} cell(1,r.N_rec) ];
+Su_val = zeros(1,r.N_rec);
+R_lqr = zeros(1,r.N_rec);
 
 % 2021.12.14. (december 14, kedd), 16:08
-Sxup = cell(1,N_recpred);
+Sxup = cell(1,r.N_rec);
 Sxup_fh = @(Sx,K,Sxp) ...
     blkdiag([eye(nx) -K'],eye(np))' * [ 
         Sx   Sxp
@@ -145,66 +139,66 @@ Sxup_fh = @(Sx,K,Sxp) ...
 
 Nr_MaxIt = 100;
 
-status = PStatus(N_recpred,'Compute variances for initial guess');
-for k = 1:N_recpred
-    Mx_val = xx_val_NMPC(:,k);
-    Mu_val = uu_val_NMPC(k);
+status = PStatus(r.N_rec,'Compute variances for initial guess');
+for k = 1:r.N_rec
+    Mx_val = x_val_NMPC(:,k);
+    Mu_val = u_val_NMPC(k);
 
     % Prediction error.
     % f_mu_x_kp1:(x_hat[8],u_hat,V,mu_p[3],x[8],u)->(mu_x_kp1[8])
-    mu_x_kp1 = Fn_Mx_pp(Mx_val,Mu_val,VV(k),Mp_val);
-    Mxx_pp_error(k) = norm(full(mu_x_kp1) - xx_val_NMPC(:,k+1))^2;
+    mu_x_kp1 = Fn_Mx_pp(Mx_val,Mu_val,r.VV(k),Mp_val);
+    Mx_pp_error(k) = norm(full(mu_x_kp1) - x_val_NMPC(:,k+1))^2;
     
     % Compute feedback gain
-    A_num = full(Fn_A(Mx_val,Mu_val,Mp_val,VV(k)));
-    B_num = full(Fn_B(Mx_val,Mu_val,Mp_val,VV(k)));    
-    E_num = full(Fn_E(Mx_val,Mu_val,Mp_val,VV(k)));
+    A_num = full(Fn_A(Mx_val,Mu_val,Mp_val,r.VV(k)));
+    B_num = full(Fn_B(Mx_val,Mu_val,Mp_val,r.VV(k)));    
+    E_num = full(Fn_E(Mx_val,Mu_val,Mp_val,r.VV(k)));
 
     Std_u = 100;
     It = 1;
     R_lqr_fh = @(i) 2^(i-1);
     while It < Nr_MaxIt && (Mu_val-2*Std_u <= 0 || 1 <= Mu_val+2*Std_u)
-        KK(k,idx) = dlqr(A_num(idx,idx),B_num(idx,:),eye(numel(idx)),R_lqr_fh(It));    
-        Suu(k) = KK(k,:) * Sxx{k} * KK(k,:)';
-        Std_u = sqrt(Suu(k));
+        K_val(k,idx) = dlqr(A_num(idx,idx),B_num(idx,:),eye(numel(idx)),R_lqr_fh(It));    
+        Su_val(k) = K_val(k,:) * Sx_val{k} * K_val(k,:)';
+        Std_u = sqrt(Su_val(k));
         It = It + 1;
     end
     R_lqr(k) = R_lqr_fh(It-1);
 
     % Joint variance of the actual state, input, and parameter
     % 2021.12.14. (december 14, kedd), 16:09
-    Sxup{k} = Sxup_fh(Sxx{k},KK(k,:),Sxxp{k});
+    Sxup{k} = Sxup_fh(Sx_val{k},K_val(k,:),Sxp_val{k});
     
     % Compute state-parameter covariance
     % f_Sigma_xp_kp1:(x_hat[8],u_hat,V,mu_p[3],Sigma_xp[8x3])->(Sigma_xp_kp1[8x3])
-    Sxxp{k+1} = full(Fn_Sxp_pp(Mx_val,Mu_val,VV(k),Mp_val,Sxxp{k},KK(k,:)));
+    Sxp_val{k+1} = full(Fn_Sxp_pp(Mx_val,Mu_val,r.VV(k),Mp_val,Sxp_val{k},K_val(k,:)));
     
     % Compute state variance
     % f_Sigma_x_kp1:(x_hat[8],u_hat,V,mu_p[3],Sigma_xp[8x3],Sigma_x[8x8,36nz])->(Sigma_x_kp1[8x8])
-    Sxx{k+1} = full(Fn_Sx_pp(Mx_val,Mu_val,VV(k),Mp_val,Sxxp{k},Sxx{k},KK(k,:)));
+    Sx_val{k+1} = full(Fn_Sx_pp(Mx_val,Mu_val,r.VV(k),Mp_val,Sxp_val{k},Sx_val{k},K_val(k,:)));
 
     status.progress(k);
 end
 
-Sxup = [Sxup {Sxup_fh(Sxxp{end},0*KK(end,:),Sxxp{end})}];
+Sxup = [Sxup {Sxup_fh(Sxp_val{end},0*K_val(end,:),Sxp_val{end})}];
 
 r.Sy_diag = cellfun(@(x,u,S) {full(hvar.Fn(x,u,Mp_val,S))}, ...
-    num2cell(r.x_All,1), ...
-    num2cell([r.u_All nan]), Sxup);
+    num2cell(r.x_val,1), ...
+    num2cell([r.u_val nan]), Sxup);
 r.Sy_diag = horzcat(r.Sy_diag{:});
 
 
-r.Muu_val = uu_val_NMPC;
-r.Mxx_val = xx_val_NMPC;
-r.Sxx_val = Sxx;
-r.Sxxp_val = Sxxp;
+r.Mu_val = u_val_NMPC;
+r.Mx_val = x_val_NMPC;
+r.Sx_val = Sx_val;
+r.Sxp_val = Sxp_val;
 r.Sxup_val = Sxup;
-r.Mx_pp_error = Mxx_pp_error;
-r.Suu_val = Suu;
-r.KK_val = KK;
+r.Mx_pp_error = Mx_pp_error;
+r.Su_val = Su_val;
+r.K_val = K_val;
 r.R_lqr = R_lqr;
 
-Sxx_diag_cell = cellfun(@(Sigma) {diag(Sigma)},r.Sxx_val);
-r.Sxx_diag = [ Sxx_diag_cell{:} ];
+Sx_diag_cell = cellfun(@(Sigma) {diag(Sigma)},r.Sx_val);
+r.Sx_diag = [ Sx_diag_cell{:} ];
 
 end

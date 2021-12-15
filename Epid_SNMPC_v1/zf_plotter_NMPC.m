@@ -19,25 +19,30 @@ end
 %  Reviewed on 2021. October 12. (2021b)
 %
 
+%%
+
 FilePref = sprintf(['results/NMPC%s/%s_Pred-%s'],...
     args.Version,datestr(date,29),datestr(r.Date_End_REC,29));
-mkdir(fileparts(FilePref))
+DIR = fileparts(FilePref);
+if ~exist(DIR,"dir")
+    mkdir(DIR)
+end
 
 r = zf_plotter_opts(r);
 
-N_prefrec = r.N_pref + r.N_rec + 1;
+N = r.N_rec;
 
 %% REC: Segedvaltozok
 
-L_val = r.x_All(2,:)';
-P_val = r.x_All(3,:)';
-I_val = r.x_All(4,:)';
-A_val = r.x_All(5,:)';
-H_val = r.x_All(6,:)';
-R_val = r.x_All(7,:)';
-D_val = r.x_All(8,:)';
-U_val = r.x_All(9,:)';
-R_All_val = r.x_All(10,:)';
+L_val = r.x_val(2,:)';
+P_val = r.x_val(3,:)';
+I_val = r.x_val(4,:)';
+A_val = r.x_val(5,:)';
+H_val = r.x_val(6,:)';
+R_val = r.x_val(7,:)';
+D_val = r.x_val(8,:)';
+U_val = r.x_val(9,:)';
+R_val_val = r.x_val(10,:)';
 
 %% Allitsuk be a Figure ablakot floating mode-ba.
 
@@ -61,8 +66,8 @@ if Idx <= Tl_N
     ylim([0,Perc_Max])
     
     yyaxis left
-    plot(r.d_All,r.x_All(6,:),'.-','Color',[0.4660 0.6740 0.1880]), hold on
-    plot(r.d_All(1:N_prefrec),r.H_ref_All(1:N_prefrec)','-r','LineWidth',1.5)
+    plot(r.d_val,r.x_val(6,:),'.-','Color',[0.4660 0.6740 0.1880]), hold on
+    plot(r.d_val(1:N+1),r.H_ref_All(1:N+1)','-r','LineWidth',1.5)
     legend('($\mathbf{H}$) Closed-loop trajectory for fixed parameters','($\mathbf{H}^{\mathrm{Off}}$) Official hospitalization data','Location','northwest')
     
     title('($\mathbf{H}$) Hosp. compared to official data','Interpreter','latex','FontSize',14)
@@ -87,10 +92,10 @@ if Idx <= Tl_N
     ylim([0,Perc_Max])
     
     yyaxis left
-    plot(r.d_All,R_val,'LineWidth',2);
+    plot(r.d_val,R_val,'LineWidth',2);
     hold on
-    plot(r.d_All,R_All_val,'LineWidth',2);
-    plot(r.d_All,R_val + U_val,'LineWidth',2);
+    plot(r.d_val,R_val_val,'LineWidth',2);
+    plot(r.d_val,R_val + U_val,'LineWidth',2);
     plot(0,0,'w')
     plot(0,0,'w')
     
@@ -116,18 +121,14 @@ Idx = 2;
 if Idx <= Tl_N
     Ax(Idx) = nexttile(Idx);
     
-    Pb_prefrec_beta = plot(r.d_All(1:N_prefrec-1),r.u_All(1:N_prefrec-1)); hold on
-    Pb_prefrec_Rc = plot(r.d_All(1:N_prefrec-1),r.Rc_t(1:N_prefrec-1));
-    Pb_pred = plot(r.d_All(N_prefrec-1:end-1),r.u_All(N_prefrec-1:end),'--','Color',Pb_prefrec_beta.Color);
-
-    plot([r.Date_Assume_Beta,r.d_All(end-1)],[1 1]*r.beta_jovo,'LineWidth',2);
-    % plot([r.d_recpred(r.N_rec-r.LastN_beta_ref),r.d_All(end-1)],[1 1]*r.beta_jovo,'LineWidth',2);
+    Pb_beta = plot(r.d_val(1:N),r.u_val(1:N)); hold on
+    Pb_Rc = plot(r.d_val(1:N),r.Rc_t(1:N));
     
     ylim([0 3])
     
     title('($\beta$) Transmission rate (infectiousness)','Interpreter','latex','FontSize',14)
     
-    legend([Pb_prefrec_beta,Pb_prefrec_Rc], {'($\beta$) Transmission rate','($R_c$) Time-dependent reproduction number'},...
+    legend([Pb_beta,Pb_Rc], {'($\beta$) Transmission rate','($R_t$) Time-dependent reproduction number'},...
         'Interpreter','latex','Location','northwest')
     
     args.ylabel = '($\beta$) Transmission rate';
@@ -149,13 +150,13 @@ if Idx <= Tl_N
 
     yyaxis left
     hold on
-    plot(r.d_All,L_val,'-','Color',[0 0.4470 0.7410])
-    plot(r.d_All,P_val,'-','Color',[0.8500 0.3250 0.0980])
-    plot(r.d_All,I_val,'-','Color',[0.9290 0.6940 0.1250])
-    plot(r.d_All,A_val,'-','Color',[0.4940 0.1840 0.5560])
-    plot(r.d_All,H_val,'-','Color',[0.4660 0.6740 0.1880])
-    plot(r.d_All,D_val,'-','Color',[0.3010 0.7450 0.9330])
-    plot(r.d_All(1:N_prefrec),r.H_ref_All(1:N_prefrec)','-r','LineWidth',1.5)
+    plot(r.d_val,L_val,'-','Color',[0 0.4470 0.7410])
+    plot(r.d_val,P_val,'-','Color',[0.8500 0.3250 0.0980])
+    plot(r.d_val,I_val,'-','Color',[0.9290 0.6940 0.1250])
+    plot(r.d_val,A_val,'-','Color',[0.4940 0.1840 0.5560])
+    plot(r.d_val,H_val,'-','Color',[0.4660 0.6740 0.1880])
+    plot(r.d_val,D_val,'-','Color',[0.3010 0.7450 0.9330])
+    plot(r.d_val(1:N+1),r.H_ref_All(1:N+1)','-r','LineWidth',1.5)
     
     ylim([0,Perc_Max]*r.Par.Np.val/100);
     
@@ -185,7 +186,7 @@ if Idx <= Tl_N
     ylim([0,Perc_Max])
 
     yyaxis left
-    plot(r.d_All,r.Daily_all_Inf');
+    plot(r.d_val,r.Daily_all_Inf');
 
     legend('All infected',...
         'Interpreter','latex','Location','northwest')
@@ -196,7 +197,7 @@ if Idx <= Tl_N
         'Interpreter','latex','FontSize',11)
 
     args.ylabel = '';
-    args.fname = '_Fig5_All_inf';
+    args.fname = '_Fig5_val_inf';
     args.Plotter(r,args,"Show_XLabel",Idx > (args.Layout{1}-1)*args.Layout{2})
 end
 
@@ -213,7 +214,7 @@ if Idx <= Tl_N
     ylim([0,Perc_Max])
     
     yyaxis left
-    plot(r.d_All,r.Daily_new_Inf);
+    plot(r.d_val,r.Daily_new_Inf);
 
     ylim([0,Perc_Max]*r.Par.Np.val/100);
 
