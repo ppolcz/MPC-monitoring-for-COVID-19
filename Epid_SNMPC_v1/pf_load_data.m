@@ -17,6 +17,26 @@ end
 xls_name = 'data_All_2019-03-31.xls';
 Wiki_angol = readtable(xls_name, 'ReadVariableNames', true, 'Sheet', 'Wiki_angol');
 
+%%
+
+Rt_data = readtable(xls_name, 'ReadVariableNames', true, 'Sheet', 'Rt');
+
+Rt_Good = ~isnan(Rt_data.Rt);
+N_Rt = numel(Rt_Good);
+
+t = 0:N_Rt-1;
+t_Good = t(Rt_Good);
+Rt_Good = Rt_data.Rt(Rt_Good);
+
+t_Relevand = t_Good(1):t_Good(end);
+Rt_Relevant = interp1(t_Good,Rt_Good,t_Relevand,'linear');
+Rt_ma7 = movmean(Rt_Relevant,7);
+
+r.AtloTeam.t_Rt = t_Relevand;
+r.AtloTeam.d_Rt = Rt_data.Date(1) + t_Relevand;
+r.AtloTeam.Rt = Rt_Relevant;
+r.AtloTeam.Rt_ma7 = Rt_ma7;
+
 %% Date variables
 
 Start_Date = datetime(2020,03,01);

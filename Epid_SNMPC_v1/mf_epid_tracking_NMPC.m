@@ -13,7 +13,7 @@ function r = mf_epid_tracking_NMPC(args)
 r.Date_Start_MPC = datetime(2020,08,20);
 r.Date_End_REC = datetime(date);
 
-r.w_diff_beta = 1e5;
+r.w_diff_beta = 1e4;
 r.w_ref_H = 1e-4;
 r.w_ref_H_is_relative = true;
 
